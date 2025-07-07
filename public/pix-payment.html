@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Pix - Appacai</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f8f8f8; color: #333; }
+        .container { background-color: #ffffff; padding: 2.5rem; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; }
+        h1 { font-size: 2.2rem; margin-bottom: 1.5rem; color: #4CAF50; }
+        h3 { font-size: 1.5rem; margin-top: 1.5rem; margin-bottom: 1rem; color: #555; }
+        p { font-size: 1.1rem; margin-bottom: 1rem; }
+        #qr-code-img { max-width: 280px; height: auto; display: block; margin: 25px auto; border: 2px solid #eee; padding: 10px; background-color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        #pix-copy-code { width: calc(100% - 20px); height: 120px; margin-top: 20px; padding: 15px; border: 1px dashed #a0a0a0; border-radius: 8px; background-color: #f9f9f9; resize: vertical; font-family: 'Courier New', monospace; font-size: 1.1rem; color: #333; }
+        button { background-color: #4CAF50; color: white; padding: 15px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.2rem; width: 100%; margin-top: 20px; transition: background-color 0.3s ease, transform 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        button:hover { background-color: #45a049; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        button#check-payment-btn { background-color: #007bff; }
+        button#check-payment-btn:hover { background-color: #0056b3; }
+        button#generate-new-qr-btn { background-color: #ff9800; }
+        button#generate-new-qr-btn:hover { background-color: #e68a00; }
+        #payment-status-message, #timer-display { margin-top: 25px; padding: 18px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.15rem; }
+        #payment-status-message p, #timer-display p { margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container" id="payment-area">
+        <h1>Pagamento Pix</h1>
+        <p>ID do Pedido: <span id="current-order-id-display"></span></p>
+
+        <div id="timer-display">
+            </div>
+
+        <div id="qrcode">
+            <h3>Escaneie com o app do banco:</h3>
+            <img id="qr-code-img" src="" alt="QR Code Pix">
+            <p>Código copia e cola:</p>
+            <textarea id="pix-copy-code" readonly></textarea>
+        </div>
+
+        <button id="check-payment-btn">✅ Fiz o Pagamento</button>
+        <button id="generate-new-qr-btn" style="display: none;">🔁 Gerar Novo QR Code</button>
+
+        <div id="payment-status-message">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

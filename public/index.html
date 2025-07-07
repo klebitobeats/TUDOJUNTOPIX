@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Açaí Delícias</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .page-content {
+            display: none; /* Hidden by default */
+            flex-grow: 1;
+            padding-bottom: 80px; /* Space for fixed navbar */
+        }
+        .page-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #4CAF50; /* Green for navbar */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-card {
+            background-color: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #f44336;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: #da190b;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .message-modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Main Application Container -->
+    <div id="app" class="flex flex-col flex-grow">
+
+        <!-- Home Page (Menu) -->
+        <section id="home-page" class="page-content active p-4">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 mt-4">Nosso Cardápio</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <!-- Product Card 1 -->
+                <div class="product-card p-6 flex flex-col items-center text-center">
+                    <img src="https://placehold.co/150x150/8A2BE2/FFFFFF?text=Açaí+Pequeno" alt="Açaí Pequeno" class="w-36 h-36 rounded-full mb-4 object-cover">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">Açaí Pequeno</h2>
+                    <p class="text-gray-600 mb-4">Delicioso açaí para um lanche rápido.</p>
+                    <p class="text-2xl font-bold text-green-600 mb-4">R$ 12,00</p>
+                    <button class="btn-primary w-full add-to-cart" data-id="acai-pequeno" data-name="Açaí Pequeno" data-price="12.00">Adicionar ao Carrinho</button>
+                </div>
+                <!-- Product Card 2 -->
+                <div class="product-card p-6 flex flex-col items-center text-center">
+                    <img src="https://placehold.co/150x150/9370DB/FFFFFF?text=Açaí+Médio" alt="Açaí Médio" class="w-36 h-36 rounded-full mb-4 object-cover">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">Açaí Médio</h2>
+                    <p class="text-gray-600 mb-4">Porção ideal para matar a sua fome.</p>
+                    <p class="text-2xl font-bold text-green-600 mb-4">R$ 18,00</p>
+                    <button class="btn-primary w-full add-to-cart" data-id="acai-medio" data-name="Açaí Médio" data-price="18.00">Adicionar ao Carrinho</button>
+                </div>
+                <!-- Product Card 3 -->
+                <div class="product-card p-6 flex flex-col items-center text-center">
+                    <img src="https://placehold.co/150x150/DA70D6/FFFFFF?text=Barca+de+Açaí" alt="Barca de Açaí" class="w-36 h-36 rounded-full mb-4 object-cover">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">Barca de Açaí</h2>
+                    <p class="text-gray-600 mb-4">Perfeita para compartilhar com a galera.</p>
+                    <p class="text-2xl font-bold text-green-600 mb-4">R$ 36,00</p>
+                    <button class="btn-primary w-full add-to-cart" data-id="barca-acai" data-name="Barca de Açaí" data-price="36.00">Adicionar ao Carrinho</button>
+                </div>
+                <!-- Product Card 4 -->
+                <div class="product-card p-6 flex flex-col items-center text-center">
+                    <img src="https://placehold.co/150x150/FF69B4/FFFFFF?text=Sorvetinho" alt="Sorvetinho" class="w-36 h-36 rounded-full mb-4 object-cover">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">Sorvetinho</h2>
+                    <p class="text-gray-600 mb-4">Um doce gelado para refrescar.</p>
+                    <p class="text-2xl font-bold text-green-600 mb-4">R$ 3,00</p>
+                    <button class="btn-primary w-full add-to-cart" data-id="sorvetinho" data-name="Sorvetinho" data-price="3.00">Adicionar ao Carrinho</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cart Page -->
+        <section id="cart-page" class="page-content p-4">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 mt-4">Seu Carrinho</h1>
+            <div id="cart-items-container" class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto mb-6">
+                <!-- Cart items will be rendered here by JavaScript -->
+                <p class="text-gray-500 text-center" id="empty-cart-message">Seu carrinho está vazio.</p>
+            </div>
+            <div class="max-w-2xl mx-auto flex justify-between items-center bg-white rounded-xl shadow-md p-6 mb-6">
+                <span class="text-xl font-bold text-gray-800">Total:</span>
+                <span id="cart-total" class="text-2xl font-bold text-green-600">R$ 0,00</span>
+            </div>
+            <div class="max-w-2xl mx-auto flex flex-col md:flex-row justify-between gap-4">
+                <button id="add-more-items-btn" class="btn-secondary flex-1">Adicionar mais itens</button>
+                <button id="next-to-checkout-btn" class="btn-primary flex-1">Próximo</button>
+            </div>
+        </section>
+
+        <!-- Checkout Page (Finalização) -->
+        <section id="checkout-page" class="page-content p-4">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 mt-4">Finalizar Pedido</h1>
+            <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Seus Dados</h2>
+                <div class="mb-4">
+                    <label for="checkout-address" class="block text-gray-700 text-sm font-bold mb-2">Endereço:</label>
+                    <input type="text" id="checkout-address" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Rua, Número, Bairro, Cidade">
+                </div>
+                <div class="mb-4">
+                    <label for="checkout-phone" class="block text-gray-700 text-sm font-bold mb-2">Telefone:</label>
+                    <input type="text" id="checkout-phone" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="(XX) XXXXX-XXXX">
+                </div>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 mt-6">Pagamento</h2>
+                <div class="mb-4">
+                    <label for="payment-method" class="block text-gray-700 text-sm font-bold mb-2">Método de Pagamento:</label>
+                    <select id="payment-method" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="pix">Pix</option>
+                    </select>
+                </div>
+                <div class="text-right text-xl font-bold text-gray-800 mb-4">
+                    Frete: <span id="checkout-frete" class="text-green-600">R$ 5,00</span>
+                </div>
+                <div class="text-right text-2xl font-bold text-gray-800 mb-6">
+                    Total a Pagar: <span id="checkout-total" class="text-green-600">R$ 0,00</span>
+                </div>
+                <button id="finalize-order-btn" class="btn-primary w-full">Finalizar Pedido</button>
+            </div>
+        </section>
+
+        <!-- Orders Page -->
+        <section id="orders-page" class="page-content p-4">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 mt-4">Meus Pedidos</h1>
+            <div id="orders-container" class="max-w-2xl mx-auto">
+                <!-- Orders will be rendered here by JavaScript -->
+                <p id="no-orders-message" class="text-gray-500 text-center">Você não tem pedidos feitos.</p>
+                <div id="login-to-see-orders" class="bg-white rounded-xl shadow-md p-6 text-center mt-4">
+                    <p class="text-gray-700 mb-4">Faça login ou cadastre-se para ver seus pedidos.</p>
+                    <button id="login-register-orders-btn" class="btn-primary">Faça login / Cadastre-se</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Page -->
+        <section id="profile-page" class="page-content p-4">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 mt-4">Meu Perfil</h1>
+            <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto mb-6">
+                <div class="mb-4">
+                    <label for="profile-email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="profile-email" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight bg-gray-100" readonly>
+                </div>
+                <div class="mb-4">
+                    <label for="profile-address" class="block text-gray-700 text-sm font-bold mb-2">Endereço:</label>
+                    <input type="text" id="profile-address" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Não informado" disabled>
+                </div>
+                <div class="mb-6">
+                    <label for="profile-phone" class="block text-gray-700 text-sm font-bold mb-2">Telefone:</label>
+                    <input type="text" id="profile-phone" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Não informado" disabled>
+                </div>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button id="edit-profile-btn" class="btn-secondary flex-1">Editar</button>
+                    <button id="save-profile-btn" class="btn-primary flex-1 hidden">Salvar</button>
+                    <button id="logout-btn" class="btn-secondary flex-1">Sair</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Login/Register Modal -->
+        <div id="login-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="login-modal-title" class="text-2xl font-bold text-center text-gray-800 mb-6">Faça Login / Cadastre-se</h2>
+                <div class="mb-4">
+                    <label for="login-email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="login-email" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="seuemail@exemplo.com">
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-gray-700 text-sm font-bold mb-2">Senha:</label>
+                    <input type="password" id="login-password" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="********">
+                </div>
+                <div id="login-buttons" class="flex flex-col-reverse md:flex-row justify-between gap-4">
+                    <button id="register-btn" class="btn-primary flex-1">Cadastre-se</button>
+                    <button id="login-btn" class="btn-secondary flex-1">Login</button>
+                </div>
+                <p id="login-error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+            </div>
+        </div>
+
+        <!-- Message Modal -->
+        <div id="message-modal" class="modal">
+            <div class="message-modal-content">
+                <p id="message-modal-text" class="text-lg text-gray-800 mb-6"></p>
+                <button id="message-modal-close-btn" class="btn-primary">OK</button>
+            </div>
+        </div>
+
+        <!-- Fixed Navigation Bar -->
+        <nav class="navbar py-3">
+            <ul class="flex justify-around items-center text-white text-sm font-semibold">
+                <li><a href="#home" class="nav-link flex flex-col items-center p-2 rounded-lg hover:bg-green-600 transition-colors" data-page="home"><i class="fas fa-home text-xl mb-1"></i>Menu</a></li>
+                <li><a href="#cart" class="nav-link flex flex-col items-center p-2 rounded-lg hover:bg-green-600 transition-colors" data-page="cart"><i class="fas fa-shopping-cart text-xl mb-1"></i>Carrinho</a></li>
+                <li><a href="#orders" class="nav-link flex flex-col items-center p-2 rounded-lg hover:bg-green-600 transition-colors" data-page="orders"><i class="fas fa-clipboard-list text-xl mb-1"></i>Pedidos</a></li>
+                <li id="profile-nav-item" class="hidden"><a href="#profile" class="nav-link flex flex-col items-center p-2 rounded-lg hover:bg-green-600 transition-colors" data-page="profile"><i class="fas fa-user text-xl mb-1"></i>Perfil</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, collection, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration (provided by user)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJoQx2wZon4EnSJTXBXZMnZ7f7K2aJQao",
+            authDomain: "appfuncional-47d81.firebaseapp.com",
+            projectId: "appfuncional-47d81",
+            storageBucket: "appfuncional-47d81.firebasestorage.app",
+            messagingSenderId: "457133115242",
+            appId: "1:457133115242:web:12d13f303afa05e8c18713",
+            measurementId: "G-SCZSPQK4ZL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global state variables
+        let currentUser = null; // Firebase user object (can be anonymous or email/password)
+        let isEmailAuthenticated = false; // True if user is authenticated via email/password
+        let cartItems = []; // In-memory cart, lost on refresh if not logged in
+        let isFromCartCheckout = false; // Flag to control login modal button text and profile tab access
+        let currentPage = 'home'; // Initialize currentPage to 'home'
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Use __app_id if available
+
+        // DOM Elements
+        const homePage = document.getElementById('home-page');
+        const cartPage = document.getElementById('cart-page');
+        const checkoutPage = document.getElementById('checkout-page');
+        const ordersPage = document.getElementById('orders-page');
+        const profilePage = document.getElementById('profile-page');
+
+        const navLinks = document.querySelectorAll('.nav-link');
+        const profileNavItem = document.getElementById('profile-nav-item');
+
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const cartTotalSpan = document.getElementById('cart-total');
+        const addMoreItemsBtn = document.getElementById('add-more-items-btn');
+        const nextToCheckoutBtn = document.getElementById('next-to-checkout-btn');
+
+        const checkoutAddressInput = document.getElementById('checkout-address');
+        const checkoutPhoneInput = document.getElementById('checkout-phone');
+        const checkoutFreteSpan = document.getElementById('checkout-frete');
+        const checkoutTotalSpan = document.getElementById('checkout-total');
+        const finalizeOrderBtn = document.getElementById('finalize-order-btn');
+        const FRETE_VALUE = 5.00; // Fixed freight value
+
+        const ordersContainer = document.getElementById('orders-container');
+        const noOrdersMessage = document.getElementById('no-orders-message');
+        const loginToSeeOrdersDiv = document.getElementById('login-to-see-orders');
+        const loginRegisterOrdersBtn = document.getElementById('login-register-orders-btn');
+
+        const profileEmailInput = document.getElementById('profile-email');
+        const profileAddressInput = document.getElementById('profile-address');
+        const profilePhoneInput = document.getElementById('profile-phone');
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const saveProfileBtn = document.getElementById('save-profile-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const loginModal = document.getElementById('login-modal');
+        const loginModalTitle = document.getElementById('login-modal-title');
+        const loginEmailInput = document.getElementById('login-email');
+        const loginPasswordInput = document.getElementById('login-password');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const loginErrorMessage = document.getElementById('login-error-message');
+        const loginButtonsDiv = document.getElementById('login-buttons');
+
+        const messageModal = document.getElementById('message-modal');
+        const messageModalText = document.getElementById('message-modal-text');
+        const messageModalCloseBtn = document.getElementById('message-modal-close-btn');
+
+        // Products data (hardcoded as per request)
+        const products = [
+            { id: 'acai-pequeno', name: 'Açaí Pequeno', price: 12.00 },
+            { id: 'acai-medio', name: 'Açaí Médio', price: 18.00 },
+            { id: 'barca-acai', name: 'Barca de Açaí', price: 36.00 },
+            { id: 'sorvetinho', name: 'Sorvetinho', price: 3.00 },
+        ];
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a custom message modal.
+         * @param {string} message - The message to display.
+         */
+        function showMessage(message) {
+            messageModalText.textContent = message;
+            messageModal.classList.add('active');
+        }
+
+        /**
+         * Closes the message modal.
+         */
+        messageModalCloseBtn.addEventListener('click', () => {
+            messageModal.classList.remove('active');
+        });
+
+        /**
+         * Shows a specific page and hides others.
+         * @param {string} pageId - The ID of the page to show (e.g., 'home', 'cart').
+         */
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(`${pageId}-page`).classList.add('active');
+            currentPage = pageId; // Update currentPage here
+
+            // Update active nav link styling
+            navLinks.forEach(link => {
+                link.classList.remove('text-blue-300'); // Example active color
+                if (link.dataset.page === pageId) {
+                    link.classList.add('text-blue-300'); // Example active color
+                }
+            });
+
+            // Specific logic for page transitions
+            if (pageId === 'orders') {
+                renderOrders();
+            } else if (pageId === 'cart') {
+                renderCart();
+            } else if (pageId === 'profile') {
+                renderProfile();
+            }
+        }
+
+        /**
+         * Opens the login/register modal.
+         * @param {boolean} fromCart - True if opened from the cart's "Próximo" button.
+         */
+        function openLoginModal(fromCart = false) {
+            isFromCartCheckout = fromCart;
+            loginErrorMessage.textContent = ''; // Clear previous errors
+            loginErrorMessage.classList.add('hidden');
+            loginEmailInput.value = '';
+            loginPasswordInput.value = '';
+
+            if (fromCart) {
+                loginModalTitle.textContent = 'Cadastre-se / Entre';
+                // Swap button order for cart flow
+                loginButtonsDiv.innerHTML = `
+                    <button id="register-btn-modal" class="btn-primary flex-1">Cadastre-se</button>
+                    <button id="login-btn-modal" class="btn-secondary flex-1">Entre</button>
+                `;
+                document.getElementById('register-btn-modal').addEventListener('click', handleRegister);
+                document.getElementById('login-btn-modal').addEventListener('click', handleLogin);
+            } else {
+                loginModalTitle.textContent = 'Faça Login / Cadastre-se';
+                // Original button order
+                loginButtonsDiv.innerHTML = `
+                    <button id="register-btn" class="btn-primary flex-1">Cadastre-se</button>
+                    <button id="login-btn" class="btn-secondary flex-1">Login</button>
+                `;
+                document.getElementById('register-btn').addEventListener('click', handleRegister);
+                document.getElementById('login-btn').addEventListener('click', handleLogin);
+            }
+            loginModal.classList.add('active');
+        }
+
+        /**
+         * Closes the login/register modal.
+         */
+        function closeLoginModal() {
+            loginModal.classList.remove('active');
+        }
+
+        // --- Firebase Authentication ---
+
+        /**
+         * Handles user login with email and password.
+         */
+        async function handleLogin() {
+            const email = loginEmailInput.value;
+            const password = loginPasswordInput.value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showMessage('Login realizado com sucesso!');
+                closeLoginModal();
+                // onAuthStateChanged will handle cart merge and page redirection
+            } catch (error) {
+                console.error("Erro ao fazer login:", error);
+                loginErrorMessage.textContent = 'Erro ao fazer login. Verifique seu email e senha.';
+                loginErrorMessage.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Handles user registration with email and password.
+         */
+        async function handleRegister() {
+            const email = loginEmailInput.value;
+            const password = loginPasswordInput.value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                showMessage('Cadastro realizado com sucesso!');
+                closeLoginModal();
+                // onAuthStateChanged will handle cart merge and page redirection
+            } catch (error) {
+                console.error("Erro ao cadastrar:", error);
+                loginErrorMessage.textContent = 'Erro ao cadastrar. Tente novamente ou use outro email.';
+                loginErrorMessage.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Handles user logout.
+         */
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                showMessage('Você foi desconectado.');
+                showPage('home'); // Go to home page after logout
+                // Cart items will be cleared in onAuthStateChanged for non-authenticated users
+            } catch (error) {
+                console.error("Erro ao fazer logout:", error);
+                showMessage('Erro ao fazer logout. Tente novamente.');
+            }
+        }
+
+        /**
+         * Firebase Auth State Listener: Manages user session and data loading.
+         */
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            // isEmailAuthenticated is true if user exists AND is NOT anonymous
+            isEmailAuthenticated = !!user && !user.isAnonymous;
+
+            if (!user) {
+                // If no user (initial load or after explicit logout), sign in anonymously
+                try {
+                    await signInAnonymously(auth);
+                    // onAuthStateChanged will fire again with the anonymous user, handling subsequent logic
+                } catch (error) {
+                    console.error("Erro ao fazer login anônimo:", error);
+                }
+            }
+
+            // Update UI based on email authentication status
+            // The "Perfil" tab is only visible for email-authenticated users
+            profileNavItem.classList.toggle('hidden', !isEmailAuthenticated);
+
+            // Load user-specific data (profile, cart, orders)
+            if (currentUser) { // Ensure currentUser is available (could be anonymous or email/password)
+                // Load profile and cart for any user (anonymous or authenticated)
+                await loadUserProfile(); // This will load for anonymous too, if data exists
+                await loadCartFromFirestore(); // This will load for anonymous too, if data exists
+
+                // If user just became email authenticated AND there were items in their anonymous cart,
+                // save the merged cart to Firestore under their new email-authenticated UID.
+                if (isEmailAuthenticated && cartItems.length > 0) {
+                    await saveCartToFirestore();
+                }
+
+                // If coming from cart checkout and now email authenticated, go to checkout page
+                if (isFromCartCheckout && isEmailAuthenticated) {
+                    showPage('checkout');
+                    renderCheckoutPage();
+                    isFromCartCheckout = false; // Reset flag
+                } else if (!isEmailAuthenticated && currentPage === 'checkout') {
+                    // If user was on checkout, but then logged out or became anonymous, redirect to home
+                    showPage('home');
+                }
+
+                renderOrders(); // Re-render orders based on current auth state (email authenticated or not)
+            } else {
+                // If no user at all (e.g., after explicit signOut and before anonymous sign-in completes)
+                cartItems = []; // Clear in-memory cart
+                renderCart();
+                renderOrders(); // Will show login prompt for orders
+            }
+        });
+
+        // --- Firestore Data Management ---
+
+        /**
+         * Loads user profile data from Firestore.
+         */
+        async function loadUserProfile() {
+            if (!currentUser) return; // Need a user (anonymous or authenticated) to load profile
+            try {
+                const userProfileRef = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/profile`, 'userProfile');
+                const docSnap = await getDoc(userProfileRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    profileEmailInput.value = currentUser.email || 'Usuário Anônimo'; // Show email if available, else "Anonymous"
+                    profileAddressInput.value = data.address || '';
+                    profilePhoneInput.value = data.phone || '';
+                    checkoutAddressInput.value = data.address || '';
+                    checkoutPhoneInput.value = data.phone || '';
+                } else {
+                    // If no profile exists, ensure fields are empty
+                    profileEmailInput.value = currentUser.email || 'Usuário Anônimo';
+                    profileAddressInput.value = '';
+                    profilePhoneInput.value = '';
+                    checkoutAddressInput.value = '';
+                    checkoutPhoneInput.value = '';
+                }
+            } catch (error) {
+                console.error("Erro ao carregar perfil do usuário:", error);
+            }
+        }
+
+        /**
+         * Saves user profile data to Firestore.
+         * @param {string} address - User's address.
+         * @param {string} phone - User's phone number.
+         */
+        async function saveUserProfile(address, phone) {
+            if (!currentUser) { // Can save for anonymous users too
+                showMessage('Erro: Não foi possível identificar o usuário para salvar o perfil.');
+                return;
+            }
+            try {
+                const userProfileRef = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/profile`, 'userProfile');
+                await setDoc(userProfileRef, {
+                    email: currentUser.email || null, // Save email if available
+                    address: address,
+                    phone: phone,
+                    updatedAt: serverTimestamp()
+                }, { merge: true }); // Use merge to update existing fields without overwriting others
+                showMessage('Perfil salvo com sucesso!');
+                renderProfile(); // Re-render profile page after saving
+            } catch (error) {
+                console.error("Erro ao salvar perfil do usuário:", error);
+                showMessage('Erro ao salvar perfil. Tente novamente.');
+            }
+        }
+
+        /**
+         * Saves the current cart items to Firestore for the current user (anonymous or authenticated).
+         */
+        async function saveCartToFirestore() {
+            if (!currentUser) return; // Need a user to save cart
+            try {
+                const cartRef = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/cart`, 'currentCart');
+                await setDoc(cartRef, { items: JSON.stringify(cartItems) }); // Store as string
+                console.log("Carrinho salvo no Firestore.");
+            } catch (error) {
+                console.error("Erro ao salvar carrinho no Firestore:", error);
+            }
+        }
+
+        /**
+         * Loads cart items from Firestore for the current user (anonymous or authenticated).
+         */
+        async function loadCartFromFirestore() {
+            if (!currentUser) return; // Need a user to load cart
+            try {
+                const cartRef = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/cart`, 'currentCart');
+                const docSnap = await getDoc(cartRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const storedItems = JSON.parse(data.items || '[]');
+                    // Merge current in-memory cart with loaded cart, prioritizing in-memory for existing items
+                    const mergedCart = [...cartItems];
+                    storedItems.forEach(storedItem => {
+                        const existingItemIndex = mergedCart.findIndex(item => item.id === storedItem.id);
+                        if (existingItemIndex > -1) {
+                            mergedCart[existingItemIndex].quantity += storedItem.quantity;
+                        } else {
+                            mergedCart.push(storedItem);
+                        }
+                    });
+                    cartItems = mergedCart;
+                    renderCart();
+                    console.log("Carrinho carregado do Firestore.");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar carrinho do Firestore:", error);
+            }
+        }
+
+        /**
+         * Adds an order to Firestore for the current user.
+         * @param {object} orderData - The order details.
+         * @returns {Promise<string>} - The ID of the newly created order document.
+         */
+        async function addOrderToFirestore(orderData) {
+            if (!currentUser) {
+                showMessage('Erro: Não foi possível identificar o usuário para finalizar o pedido.');
+                throw new Error('Usuário não identificado para adicionar pedido.');
+            }
+            try {
+                const ordersCollectionRef = collection(db, `artifacts/${APP_ID}/users/${currentUser.uid}/orders`);
+                const docRef = await addDoc(ordersCollectionRef, {
+                    ...orderData,
+                    userId: currentUser.uid, // Store userId with the order for easy retrieval by Vercel API
+                    status: 'pending', // Initial status
+                    timestamp: serverTimestamp()
+                });
+                console.log("Pedido salvo no Firestore com ID:", docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error("Erro ao adicionar pedido ao Firestore:", error);
+                showMessage('Erro ao finalizar pedido. Tente novamente.');
+                throw error; // Re-throw to propagate the error
+            }
+        }
+
+        // --- Cart Logic ---
+
+        /**
+         * Adds a product to the cart or increments its quantity.
+         * @param {string} productId - The ID of the product.
+         * @param {string} name - The name of the product.
+         * @param {number} price - The price of the product.
+         */
+        function addToCart(productId, name, price) {
+            const existingItem = cartItems.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cartItems.push({ id: productId, name, price, quantity: 1 });
+            }
+            renderCart();
+            // Save cart to Firestore if user is already authenticated (email/password or anonymous)
+            // Anonymous cart is saved immediately if an anonymous user is active.
+            // If user logs in later, the in-memory cart is merged and saved.
+            if (currentUser) {
+                saveCartToFirestore();
+            }
+            showMessage(`${name} adicionado ao carrinho!`);
+        }
+
+        /**
+         * Updates the quantity of a product in the cart.
+         * @param {string} productId - The ID of the product.
+         * @param {number} change - The amount to change the quantity by (+1 or -1).
+         */
+        function updateCartQuantity(productId, change) {
+            const itemIndex = cartItems.findIndex(item => item.id === productId);
+            if (itemIndex > -1) {
+                cartItems[itemIndex].quantity += change;
+                if (cartItems[itemIndex].quantity <= 0) {
+                    cartItems.splice(itemIndex, 1); // Remove if quantity is 0 or less
+                }
+                renderCart();
+                if (currentUser) { // Save cart if any user (anonymous or authenticated) is present
+                    saveCartToFirestore();
+                }
+            }
+        }
+
+        /**
+         * Renders the cart items in the UI.
+         */
+        function renderCart() {
+            cartItemsContainer.innerHTML = ''; // Clear existing items
+            let total = 0;
+
+            if (cartItems.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+            } else {
+                emptyCartMessage.classList.add('hidden');
+                cartItems.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+
+                    const cartItemDiv = document.createElement('div');
+                    cartItemDiv.className = 'flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0';
+                    cartItemDiv.innerHTML = `
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-800">${item.name}</h3>
+                            <p class="text-gray-600">R$ ${item.price.toFixed(2)} cada</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xl font-bold remove-item" data-id="${item.id}">-</button>
+                            <span class="text-lg font-bold text-gray-800">${item.quantity}</span>
+                            <button class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xl font-bold add-item" data-id="${item.id}">+</button>
+                        </div>
+                        <div class="ml-4 text-lg font-bold text-gray-800">R$ ${itemTotal.toFixed(2)}</div>
+                    `;
+                    cartItemsContainer.appendChild(cartItemDiv);
+                });
+            }
+            cartTotalSpan.textContent = `R$ ${total.toFixed(2)}`;
+            renderCheckoutPage(); // Update checkout page with new totals
+        }
+
+        // --- Checkout Logic ---
+
+        /**
+         * Renders the checkout page with current cart items and totals.
+         */
+        function renderCheckoutPage() {
+            let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const totalWithFrete = subtotal + FRETE_VALUE;
+
+            checkoutFreteSpan.textContent = `R$ ${FRETE_VALUE.toFixed(2)}`;
+            checkoutTotalSpan.textContent = `R$ ${totalWithFrete.toFixed(2)}`;
+        }
+
+        /**
+         * Handles the finalization of an order and redirects to Vercel Pix checkout.
+         */
+        async function handleFinalizeOrder() {
+            if (cartItems.length === 0) {
+                showMessage('Seu carrinho está vazio. Adicione itens antes de finalizar.');
+                return;
+            }
+            if (!isEmailAuthenticated) { // Rule: Must be email authenticated to finalize
+                showMessage('Você precisa estar logado para finalizar o pedido.');
+                openLoginModal(true); // Open modal with checkout flow
+                return;
+            }
+
+            const address = checkoutAddressInput.value;
+            const phone = checkoutPhoneInput.value;
+
+            if (!address || !phone) {
+                showMessage('Por favor, preencha seu endereço e telefone.');
+                return;
+            }
+
+            // Save user profile data from checkout if it's new or updated
+            await saveUserProfile(address, phone);
+
+            const orderTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) + FRETE_VALUE;
+
+            const orderData = {
+                items: cartItems.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                address: address,
+                phone: phone,
+                paymentMethod: 'Pix',
+                frete: FRETE_VALUE,
+                total: orderTotal,
+                status: 'pending_payment' // Initial status for the order
+            };
+
+            try {
+                // 1. Save the order to Firebase and get its ID
+                // This function `addOrderToFirestore` already exists in your code
+                // and will return the ID generated by Firestore.
+                const orderId = await addOrderToFirestore(orderData);
+
+                // 2. Call your Pix API to generate the QR Code
+                // As the server.js and this HTML will be in the same Vercel project, use a relative path.
+                const response = await fetch('/criar-pagamento', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ valor: orderTotal.toFixed(2), order_id: orderId }) // Send order_id
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.erro || 'Erro ao gerar QR Code Pix.');
+                }
+
+                const pixData = await response.json();
+
+                // 3. Redirect to the new Pix payment page, passing data via URL
+                const params = new URLSearchParams();
+                params.append('qr_base64', pixData.qr_code_base64);
+                params.append('qr_code', pixData.qr_code);
+                params.append('payment_id', pixData.payment_id);
+                params.append('expires_at', pixData.expires_at); // Pass expiration timestamp
+                params.append('order_id', orderId); // Pass the order ID
+
+                window.location.href = `/pix-payment.html?${params.toString()}`;
+
+            } catch (error) {
+                console.error("Erro ao processar pedido ou gerar Pix:", error);
+                showMessage(`Erro ao finalizar pedido: ${error.message}. Por favor, tente novamente.`);
+            }
+        }
+
+        // --- Orders Logic ---
+
+        /**
+         * Renders the user's orders.
+         */
+        function renderOrders() {
+            ordersContainer.innerHTML = ''; // Clear previous orders
+            if (!isEmailAuthenticated) { // Rule: Only show orders if email authenticated
+                loginToSeeOrdersDiv.classList.remove('hidden');
+                noOrdersMessage.classList.add('hidden');
+                return;
+            } else {
+                loginToSeeOrdersDiv.classList.add('hidden');
+            }
+
+            // Listen for real-time updates to orders
+            const ordersCollectionRef = collection(db, `artifacts/${APP_ID}/users/${currentUser.uid}/orders`);
+            const q = query(ordersCollectionRef);
+
+            onSnapshot(q, (snapshot) => {
+                const orders = [];
+                snapshot.forEach((doc) => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (orders.length === 0) {
+                    noOrdersMessage.classList.remove('hidden');
+                } else {
+                    noOrdersMessage.classList.add('hidden');
+                    orders.sort((a, b) => b.timestamp - a.timestamp); // Sort by most recent
+                    orders.forEach(order => {
+                        const orderDiv = document.createElement('div');
+                        orderDiv.className = 'bg-white rounded-xl shadow-md p-6 mb-4';
+                        orderDiv.innerHTML = `
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">Pedido #${order.id.substring(0, 8)}</h2>
+                            <p class="text-gray-700 mb-2"><strong>Status:</strong> <span class="font-bold ${order.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'}">${order.status.toUpperCase()}</span></p>
+                            <p class="text-gray-700 mb-2"><strong>Data:</strong> ${order.timestamp ? new Date(order.timestamp.toDate()).toLocaleString() : 'N/A'}</p>
+                            <p class="text-gray-700 mb-2"><strong>Endereço:</strong> ${order.address}</p>
+                            <p class="text-gray-700 mb-2"><strong>Telefone:</strong> ${order.phone}</p>
+                            <p class="text-gray-700 mb-2"><strong>Forma de Pagamento:</strong> ${order.paymentMethod}</p>
+                            <p class="text-gray-700 mb-2"><strong>Frete:</strong> R$ ${order.frete.toFixed(2)}</p>
+                            <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Itens:</h3>
+                            <ul class="list-disc list-inside mb-4">
+                                ${order.items.map(item => `<li>${item.name} (x${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}</li>`).join('')}
+                            </ul>
+                            <p class="text-xl font-bold text-gray-800 text-right">Total: <span class="text-green-600">R$ ${order.total.toFixed(2)}</span></p>
+                            <button class="btn-primary w-full mt-4 whatsapp-order-btn" data-order='${JSON.stringify(order)}'>Acompanhar no WhatsApp</button>
+                        `;
+                        ordersContainer.appendChild(orderDiv);
+                    });
+
+                    // Add event listeners for WhatsApp buttons after rendering
+                    document.querySelectorAll('.whatsapp-order-btn').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            const order = JSON.parse(event.target.dataset.order);
+                            openWhatsApp(order);
+                        });
+                    });
+                }
+            });
+        }
+
+        /**
+         * Opens WhatsApp with order details.
+         * @param {object} order - The order object.
+         */
+        function openWhatsApp(order) {
+            const whatsappNumber = '5581996082580'; // Brazil code + number
+            let message = `Olá! Meu pedido #${order.id.substring(0, 8)}:\n\n`;
+            message += `Status: ${order.status.toUpperCase()}\n`;
+            message += `Endereço: ${order.address}\n`;
+            message += `Telefone: ${order.phone}\n`;
+            message += `Itens do Pedido:\n`;
+            order.items.forEach(item => {
+                message += `- ${item.name} (x${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+            });
+            message += `Forma de Pagamento: ${order.paymentMethod}\n`;
+            message += `Frete: R$ ${order.frete.toFixed(2)}\n`;
+            message += `Total: R$ ${order.total.toFixed(2)}\n\n`;
+            message += `Aguardando a entrega!`;
+
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+        }
+
+        // --- Profile Logic ---
+
+        /**
+         * Renders the profile page with user data.
+         */
+        function renderProfile() {
+            if (!currentUser) { // If no user object (shouldn't happen if this page is active, but for safety)
+                profileEmailInput.value = '';
+                profileAddressInput.value = '';
+                profilePhoneInput.value = '';
+                return;
+            }
+            profileEmailInput.value = currentUser.email || 'Usuário Anônimo';
+            // Load from Firestore
+            loadUserProfile();
+
+            // Disable editing by default
+            profileAddressInput.disabled = true;
+            profilePhoneInput.disabled = true;
+            editProfileBtn.classList.remove('hidden');
+            saveProfileBtn.classList.add('hidden');
+        }
+
+        /**
+         * Toggles edit mode for profile fields.
+         */
+        function toggleEditProfile() {
+            const isEditing = profileAddressInput.disabled;
+            profileAddressInput.disabled = !isEditing;
+            profilePhoneInput.disabled = !isEditing;
+
+            if (isEditing) {
+                editProfileBtn.classList.add('hidden');
+                saveProfileBtn.classList.remove('hidden');
+            } else {
+                editProfileBtn.classList.remove('hidden');
+                saveProfileBtn.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Saves updated profile data.
+         */
+        async function handleSaveProfile() {
+            const address = profileAddressInput.value;
+            const phone = profilePhoneInput.value;
+            await saveUserProfile(address, phone);
+            toggleEditProfile(); // Exit edit mode
+        }
+
+        // --- Event Listeners ---
+
+        // Navigation bar clicks
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const pageId = link.dataset.page;
+
+                // Rule: Profile tab not clickable if from cart checkout and on checkout page
+                if (pageId === 'profile' && isFromCartCheckout && currentPage === 'checkout') {
+                    showMessage('Você não pode acessar o perfil enquanto finaliza o pedido. Conclua seu pedido primeiro.');
+                    return;
+                }
+
+                // Rule: Orders page requires email authentication
+                if (pageId === 'orders' && !isEmailAuthenticated) {
+                    openLoginModal(false); // Open generic login modal
+                    return;
+                }
+
+                showPage(pageId);
+            });
+        });
+
+        // Add to cart buttons
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const id = event.target.dataset.id;
+                const name = event.target.dataset.name;
+                const price = parseFloat(event.target.dataset.price);
+                addToCart(id, name, price);
+            });
+        });
+
+        // Cart quantity buttons (delegated event listener)
+        cartItemsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('add-item')) {
+                const id = event.target.dataset.id;
+                updateCartQuantity(id, 1);
+            } else if (event.target.classList.contains('remove-item')) {
+                const id = event.target.dataset.id;
+                updateCartQuantity(id, -1);
+            }
+        });
+
+        // Cart page buttons
+        addMoreItemsBtn.addEventListener('click', () => showPage('home'));
+        nextToCheckoutBtn.addEventListener('click', () => {
+            if (cartItems.length === 0) {
+                showMessage('Seu carrinho está vazio. Adicione itens antes de prosseguir.');
+                return;
+            }
+            if (!isEmailAuthenticated) { // Rule: If not email authenticated, open login modal
+                openLoginModal(true); // Open login modal with fromCart flag
+            } else {
+                showPage('checkout');
+                renderCheckoutPage();
+            }
+        });
+
+        // Checkout page button
+        finalizeOrderBtn.addEventListener('click', handleFinalizeOrder);
+
+        // Orders page login/register button
+        loginRegisterOrdersBtn.addEventListener('click', () => openLoginModal(false));
+
+        // Profile page buttons
+        editProfileBtn.addEventListener('click', toggleEditProfile);
+        saveProfileBtn.addEventListener('click', handleSaveProfile);
+        logoutBtn.addEventListener('click', handleLogout);
+
+        // Login modal buttons
+        // These are dynamically added/removed in openLoginModal, so attach listeners there.
+        // Initial setup for default buttons
+        document.getElementById('register-btn').addEventListener('click', handleRegister);
+        document.getElementById('login-btn').addEventListener('click', handleLogin);
+
+        // Close modal when clicking outside
+        loginModal.addEventListener('click', (event) => {
+            if (event.target === loginModal) {
+                closeLoginModal();
+            }
+        });
+
+        // --- Initial Application Load ---
+        window.onload = () => {
+            showPage('home'); // Start on the home page
+            renderCart(); // Initial render of an empty cart
+            // onAuthStateChanged will handle initial Firebase auth and data loading
+        };
+    </script>
+</body>
+</html>
