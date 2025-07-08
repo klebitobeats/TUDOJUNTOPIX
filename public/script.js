@@ -1,145 +1,161 @@
-let currentPaymentId = null;
-let paymentCheckInterval = null;
-let countdownInterval = null;
-let paymentExpiresAt = null;
-let currentOrderId = null; // Para armazenar o ID do pedido
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
-// Função para obter parâmetros da URL
-function getUrlParameter(name) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    var results = regex.exec(location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+console.log('🧪 Verificando token do Mercado Pago...');
+if (!process.env.MP_ACCESS_TOKEN) {
+  console.error('❌ ERRO: Token do Mercado Pago não encontrado no .env!');
+  // Em ambiente Vercel, não use process.exit(1) diretamente, pode causar erro de build.
+  // Apenas logamos o erro, o Vercel já vai falhar o deploy se a variável não estiver lá.
+} else {
+  console.log('✅ Token carregado com sucesso!');
 }
 
-// Inicializa a página de pagamento Pix
-document.addEventListener('DOMContentLoaded', () => {
-    // Pega os dados do QR Code e do pagamento da URL
-    const qrCodeBase64 = getUrlParameter('qr_base64');
-    const qrCodeText = getUrlParameter('qr_code');
-    const paymentId = getUrlParameter('payment_id');
-    const expiresAt = parseInt(getUrlParameter('expires_at'));
-    const orderId = getUrlParameter('order_id');
+const { MercadoPagoConfig, Payment } = require('mercadopago');
+const app = express();
 
-    if (qrCodeBase64 && qrCodeText && paymentId && !isNaN(expiresAt) && orderId) {
-        currentPaymentId = paymentId;
-        paymentExpiresAt = expiresAt;
-        currentOrderId = orderId;
+// Configurações de CORS (ajuste em produção para domínios específicos)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-        document.getElementById('qr-code-img').src = `data:image/png;base64,${qrCodeBase64}`;
-        document.getElementById('pix-copy-code').value = qrCodeText;
-        document.getElementById('current-order-id-display').innerText = orderId; // Exibe o ID do pedido
-        
-        startCountdownTimer(); // Inicia o timer
-        document.getElementById('payment-status-message').innerHTML = '<p>QR Code gerado! Você tem 7 minutos para pagar.</p>';
+// Middleware para parsing de JSON
+app.use(express.json());
 
-        // Adiciona listeners aos botões
-        document.getElementById('check-payment-btn').addEventListener('click', checkPaymentStatus);
-        document.getElementById('generate-new-qr-btn').addEventListener('click', () => {
-            // Redireciona para a página principal para gerar um novo QR
-            window.location.href = '/'; // Ou para a página de geração de Pix se for separada
-        });
+// Servir arquivos estáticos da pasta 'public'
+// Esta linha é crucial para que o Express sirva index.html, pix-payment.html, style.css, script.js, etc.
+app.use(express.static('public'));
 
-        // Esconde o botão de gerar novo QR inicialmente
-        document.getElementById('generate-new-qr-btn').style.display = 'none';
-
-    } else {
-        document.getElementById('payment-area').innerHTML = '<p style="color: red;">Erro: Dados de pagamento não encontrados. Volte para o carrinho e tente novamente.</p>';
-        document.getElementById('check-payment-btn').style.display = 'none';
-        document.getElementById('generate-new-qr-btn').style.display = 'block'; // Permite gerar novo
-    }
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN
 });
 
-function startCountdownTimer() {
-  if (countdownInterval) clearInterval(countdownInterval);
+const paymentClient = new Payment(client);
 
-  const timerDisplay = document.getElementById('timer-display');
-  
-  countdownInterval = setInterval(() => {
-    const now = Date.now();
-    const timeLeft = paymentExpiresAt - now;
+// Armazena o status dos pagamentos e seus order_ids.
+// EM PRODUÇÃO, ISSO DEVE SER UM BANCO DE DADOS PERSISTENTE!
+const paymentStatuses = {}; // paymentId: { status: 'pending', orderId: '...', createdAt: Date }
 
-    if (timeLeft <= 0) {
-      clearInterval(countdownInterval);
-      if (paymentCheckInterval) clearInterval(paymentCheckInterval);
-      timerDisplay.innerHTML = '<p style="color: red; font-weight: bold;">❌ Pix Expirado! Por favor, gere um novo QR Code.</p>';
-      document.getElementById('check-payment-btn').style.display = 'none';
-      document.getElementById('generate-new-qr-btn').style.display = 'block';
-      document.getElementById('payment-status-message').innerHTML = '';
-      currentPaymentId = null;
-      paymentExpiresAt = null;
-      return;
+app.post('/criar-pagamento', async (req, res) => {
+  try {
+    const valor = parseFloat(req.body.valor);
+    const orderId = req.body.order_id; // Recebe o ID do pedido do frontend
+
+    if (!valor || valor <= 0) {
+      return res.status(400).json({ erro: 'Valor inválido' });
+    }
+    if (!orderId) {
+      return res.status(400).json({ erro: 'ID do pedido é obrigatório' });
     }
 
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    // Calcula a data de expiração para 7 minutos a partir de agora
+    const expirationDate = new Date();
+    expirationDate.setMinutes(expirationDate.getMinutes() + 7);
+    // Formato ISO 8601 com offset de BRT (se sua aplicação estiver no fuso horário correto)
+    const dateOfExpirationISO = expirationDate.toISOString().slice(0, -5) + '-03:00'; 
 
-    timerDisplay.innerHTML = `<p style="color: purple;">Tempo restante para pagar: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</p>`;
-  }, 1000);
-}
+    const response = await paymentClient.create({
+      body: {
+        transaction_amount: valor,
+        description: `Pagamento do Pedido ${orderId} via Pix`,
+        payment_method_id: 'pix',
+        payer: {
+          email: 'teste@email.com', // Substitua pelo email real do pagador em produção
+          first_name: 'Fulano',
+          last_name: 'da Silva'
+        },
+        // Configura o tempo de expiração do QR Code Pix
+        date_of_expiration: dateOfExpirationISO,
+        // notification_url: 'SUA_URL_DO_WEBHOOK/webhook' // Será configurado no Vercel no painel
+      }
+    });
 
-async function checkPaymentStatus() {
-  if (!currentPaymentId) {
-    alert('Nenhum pagamento ativo para verificar. Gere um novo QR Code.');
-    return;
+    const qrData = response.point_of_interaction.transaction_data;
+    const paymentId = response.id; // ID do pagamento do Mercado Pago
+
+    // Inicializa o status do pagamento como pendente, associado ao orderId
+    paymentStatuses[paymentId] = {
+      status: 'pending',
+      orderId: orderId,
+      createdAt: Date.now()
+    };
+    console.log(`Pagamento ${paymentId} para Pedido ${orderId} criado. Status inicial: ${paymentStatuses[paymentId].status}`);
+
+    return res.json({
+      qr_code_base64: qrData.qr_code_base64,
+      qr_code: qrData.qr_code,
+      payment_id: paymentId, // Retorna o ID do pagamento para o frontend
+      expires_at: expirationDate.getTime() // Retorna timestamp de expiração para o frontend
+    });
+
+  } catch (error) {
+    console.error('Erro ao criar pagamento:', error);
+    res.status(500).json({ erro: 'Erro ao criar pagamento', detalhes: error.message });
   }
+});
 
-  const statusMessageDiv = document.getElementById('payment-status-message');
-  statusMessageDiv.innerHTML = '<p style="color: blue;">Verificando status do pagamento...</p>';
-  document.getElementById('check-payment-btn').disabled = true;
+// Endpoint para receber webhooks do Mercado Pago
+app.post('/webhook', async (req, res) => {
+  console.log('Webhook recebido:', req.body);
 
-  let retries = 0;
-  const maxRetries = 15; // Tenta verificar por até 45 segundos (15 * 3s)
-  const intervalTime = 3000; // A cada 3 segundos
-
-  if (paymentCheckInterval) clearInterval(paymentCheckInterval);
-
-  paymentCheckInterval = setInterval(async () => {
-    if (retries >= maxRetries) {
-      clearInterval(paymentCheckInterval);
-      statusMessageDiv.innerHTML = '<p style="color: orange;">Não foi possível confirmar o pagamento automaticamente. Verifique seu extrato e o status do pedido na sua conta.</p>';
-      document.getElementById('check-payment-btn').disabled = false;
-      document.getElementById('generate-new-qr-btn').style.display = 'block';
-      return;
-    }
+  if (req.body.type === 'payment' && req.body.data && req.body.data.id) {
+    const paymentId = req.body.data.id;
+    console.log(`Recebido webhook para Payment ID: ${paymentId}`);
 
     try {
-      const resposta = await fetch(`/check-payment-status/${currentPaymentId}`);
-      const dados = await resposta.json();
+      const paymentDetails = await paymentClient.get({ id: paymentId });
+      console.log(`Detalhes do pagamento ${paymentId}:`, paymentDetails.status);
 
-      if (dados.status === 'approved') {
-        clearInterval(paymentCheckInterval);
-        if (countdownInterval) clearInterval(countdownInterval);
-        statusMessageDiv.innerHTML = '<p style="color: green; font-weight: bold;">✅ Pagamento Aprovado! Redirecionando para Meus Pedidos...</p>';
-        document.getElementById('check-payment-btn').style.display = 'none';
-        document.getElementById('generate-new-qr-btn').style.display = 'none';
-        
-        setTimeout(() => {
-          // Redireciona para a página de sucesso do pagamento
-          window.location.href = `/pix-payment-success.html?order_id=${currentOrderId}`;
-        }, 2000);
-      } else if (dados.status === 'pending') {
-        statusMessageDiv.innerHTML = `<p style="color: blue;">Aguardando confirmação do pagamento... Tentativas: ${retries + 1}/${maxRetries}</p>`;
-      } else if (dados.status === 'rejected' || dados.status === 'cancelled') {
-        clearInterval(paymentCheckInterval);
-        if (countdownInterval) clearInterval(countdownInterval);
-        statusMessageDiv.innerHTML = `<p style="color: red; font-weight: bold;">❌ Ops! Seu pagamento foi ${dados.status}. Por favor, gere um novo QR Code.</p>`;
-        document.getElementById('check-payment-btn').disabled = false;
-        document.getElementById('generate-new-qr-btn').style.display = 'block';
-      } else if (dados.status === 'expired') {
-        clearInterval(paymentCheckInterval);
-        if (countdownInterval) clearInterval(countdownInterval);
-        statusMessageDiv.innerHTML = '<p style="color: red; font-weight: bold;">❌ O tempo para pagar o Pix expirou. Por favor, gere um novo QR Code.</p>';
-        document.getElementById('check-payment-btn').style.display = 'none';
-        document.getElementById('generate-new-qr-btn').style.display = 'block';
-        currentPaymentId = null;
+      if (paymentStatuses[paymentId]) { // Garante que o pagamento existe em memória
+        if (paymentDetails.status === 'approved') {
+          paymentStatuses[paymentId].status = 'approved';
+          console.log(`Pagamento ${paymentId} APROVADO! (Pedido: ${paymentStatuses[paymentId].orderId})`);
+          // **** AQUI VOCÊ ATUALIZARIA O STATUS DO PEDIDO NO SEU BANCO DE DADOS PERSISTENTE ****
+          // Ex: updateOrderStatusInDB(paymentStatuses[paymentId].orderId, 'approved');
+        } else if (paymentDetails.status === 'rejected' || paymentDetails.status === 'cancelled') {
+          paymentStatuses[paymentId].status = paymentDetails.status;
+          console.log(`Pagamento ${paymentId} ${paymentDetails.status.toUpperCase()}! (Pedido: ${paymentStatuses[paymentId].orderId})`);
+          // Ex: updateOrderStatusInDB(paymentStatuses[paymentId].orderId, paymentDetails.status);
+        } else {
+          // Para outros status intermediários, mantemos como pendente ou similar
+          paymentStatuses[paymentId].status = 'pending';
+          console.log(`Pagamento ${paymentId} ainda PENDENTE ou outro status: ${paymentDetails.status}`);
+        }
       } else {
-        statusMessageDiv.innerHTML = `<p style="color: orange;">Status desconhecido ou erro na verificação. Tentativas: ${retries + 1}/${maxRetries}</p>`;
+        console.warn(`Webhook para Payment ID ${paymentId} recebido, mas não encontrado em paymentStatuses.`);
       }
     } catch (error) {
-      console.error('Erro ao verificar status do pagamento:', error);
-      statusMessageDiv.innerHTML = `<p style="color: red;">Erro na verificação do pagamento. Tentativas: ${retries + 1}/${maxRetries}</p>`;
+      console.error(`Erro ao buscar detalhes do pagamento ${paymentId}:`, error);
+      // Se houver erro ao buscar detalhes, mantenha o status anterior ou trate o erro
     }
-    retries++;
-  }, intervalTime);
-}
+  }
+  res.status(200).send('Webhook recebido e processado');
+});
+
+// Endpoint para o frontend verificar o status do pagamento
+app.get('/check-payment-status/:paymentId', (req, res) => {
+  const paymentId = req.params.paymentId;
+  const statusInfo = paymentStatuses[paymentId];
+
+  if (!statusInfo) {
+    return res.json({ status: 'not_found' });
+  }
+
+  // Verificar se o Pix expirou (considerando o timer local do frontend, mas a validade real é do MP)
+  const isExpired = Date.now() > (statusInfo.createdAt + 7 * 60 * 1000) && statusInfo.status === 'pending';
+
+  if (isExpired) {
+    // Se o backend detecta que expirou e ainda está pendente, marca como expirado localmente
+    statusInfo.status = 'expired';
+    console.log(`Pagamento ${paymentId} expirado (detectado pelo backend).`);
+  }
+
+  console.log(`Consulta de status para Payment ID ${paymentId}: ${statusInfo.status}`);
+  res.json({ status: statusInfo.status, order_id: statusInfo.orderId });
+});
+
+// REMOVA ESTA LINHA: app.listen(PORT, () => { ... });
+// EM VEZ DISSO, EXPORTE O APP PARA O VERCEL
+module.exports = app;
