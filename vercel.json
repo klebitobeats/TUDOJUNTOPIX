@@ -8,6 +8,26 @@
   ],
   "routes": [
     {
+      "src": "/",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/pix-payment.html",
+      "dest": "/public/pix-payment.html"
+    },
+    {
+      "src": "/pix-payment-success.html",
+      "dest": "/public/pix-payment-success.html"
+    },
+    {
+      "src": "/style.css",
+      "dest": "/public/style.css"
+    },
+    {
+      "src": "/script.js",
+      "dest": "/script.js"
+    },
+    {
       "src": "/webhook",
       "dest": "server.js"
     },
@@ -21,7 +41,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "public/$1"
+      "dest": "/public/$1"
     }
   ]
 }
